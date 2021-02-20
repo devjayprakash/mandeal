@@ -50,8 +50,10 @@ router.post("/signup", (req, res, next) => {
 router.post("/login", (req, res) => {
   let { phone, password } = req.body;
 
-  User.exists({ phone, password }, (err, result) => {
+  User.exists({ phone }, (err, result) => {
     if (err) next(err);
+
+    console.log({ err, result });
 
     if (result) {
       //getting the user data from the database
