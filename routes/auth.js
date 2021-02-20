@@ -84,4 +84,4 @@ router.post("/login", (req, res) => {
   });
 });
 
-module.exports = Router();
+module.exports = router;

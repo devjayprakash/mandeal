@@ -4,7 +4,8 @@
   "description": "this is website to provide best price of the crops to the farmers",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev" : "nodemon index.js",
+    "start" : "node index.js"
   },
   "author": "jay",
   "license": "ISC",

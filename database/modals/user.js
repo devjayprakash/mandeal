@@ -19,6 +19,7 @@ let User = mongoose.Schema({
   },
   accountCreationDate: Date,
   lastLoginDate: Date,
+  profilePic: String,
 });
 
 module.exports = mongoose.model("user", User);

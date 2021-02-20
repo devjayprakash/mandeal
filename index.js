@@ -4,6 +4,10 @@ let morgan = require("morgan");
 let cors = require("cors");
 let bodyParser = require("body-parser");
 let helmet = require("helmet");
+let routes = require("./routes");
+
+//constants
+let isDev = process.env.PORT !== "production";
 
 let app = express();
 
@@ -13,6 +17,17 @@ app.use(helmet());
 app.use(bodyParser.json());
 app.use(cors());
 app.use(morgan("tiny"));
+app.use("/api/v1", routes);
+
+//error handler
+app.use((err, req, res, next) => {
+  res.status(500).send({
+    msg:
+      "There was some problem. Please check your request or try again after some time",
+    res: false,
+    error: isDev ? err : "Please contact the developer for more info",
+  });
+});
 
 //starting the server
 let PORT = process.env.PORT || 8080;

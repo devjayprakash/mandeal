@@ -1,9 +1,12 @@
 let mongoose = require("mongoose");
 
-mongoose.connect("", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect(
+  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.vflma.mongodb.net/mandeal?retryWrites=true&w=majority`,
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
+);
 
 let db = mongoose.connection;
 
