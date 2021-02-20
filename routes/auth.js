@@ -12,6 +12,7 @@ let User = require("../database/modals/user");
 
 router.post("/signup", (req, res, next) => {
   let data = req.body;
+  console.log(data);
 
   //passoword hashing and salting
   bcrypt.hash(data.password, 10, (err, enc_pass) => {
@@ -26,11 +27,13 @@ router.post("/signup", (req, res, next) => {
       .then((doc) => {
         //generating the token
         let token = jwt.sign(
-          { name: doc.name, phone: doc.name },
+          { name: doc.name, phone: doc.phone },
           process.env.JWT_PASS
         );
         res.cookie("jwt", token);
         res.send({
+          userdata: doc,
+          res: true,
           msg: "User registerd successfully",
         });
       })
@@ -60,7 +63,14 @@ router.post("/login", (req, res) => {
             if (err) next(err);
             if (same) {
               //successful login
+              let token = jwt.sign(
+                { name: doc.name, phone: doc.name },
+                process.env.JWT_PASS
+              );
+              res.cookie("jwt", token);
+
               res.send({
+                userdata: doc,
                 res: true,
                 msg: "Your login successful.",
               });
@@ -81,6 +91,20 @@ router.post("/login", (req, res) => {
         msg: "No user was found from the given detail",
       });
     }
+  });
+});
+
+router.post("/verifyToken", (req, res) => {
+  let token = req.body.token;
+  jwt.verify(token, process.env.JWT_PASS, (err, decoded) => {
+    if (err) next(err);
+    User.findOne({ phone: decoded.phone }, (err, doc) => {
+      if (err) next(err);
+      res.send({
+        userdata: doc,
+        res: true,
+      });
+    });
   });
 });
 

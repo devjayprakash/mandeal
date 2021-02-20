@@ -11,16 +11,21 @@ let isDev = process.env.PORT !== "production";
 
 let app = express();
 
+//database
+require("./database");
+
 //all the middlewares
 app.use(cors());
 app.use(helmet());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 app.use(morgan("tiny"));
 app.use("/api/v1", routes);
 
 //error handler
 app.use((err, req, res, next) => {
+  console.log(err);
   res.status(500).send({
     msg:
       "There was some problem. Please check your request or try again after some time",
