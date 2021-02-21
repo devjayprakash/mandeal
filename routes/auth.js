@@ -14,32 +14,45 @@ router.post("/signup", (req, res, next) => {
   let data = req.body;
   console.log(data);
 
-  //passoword hashing and salting
-  bcrypt.hash(data.password, 10, (err, enc_pass) => {
+  User.exists({ phone: data.phone }, (err, result) => {
     if (err) next(err);
+    if (result === false) {
+      //passoword hashing and salting
+      bcrypt.hash(data.password, 10, (err, enc_pass) => {
+        if (err) next(err);
 
-    data.password = enc_pass;
+        data.password = enc_pass;
 
-    //saveing the data to the database
-    let user = new User(data);
-    user
-      .save()
-      .then((doc) => {
-        //generating the token
-        let token = jwt.sign(
-          { name: doc.name, phone: doc.phone },
-          process.env.JWT_PASS
-        );
-        res.cookie("jwt", token);
-        res.send({
-          userdata: doc,
-          res: true,
-          msg: "User registerd successfully",
-        });
-      })
-      .catch((err) => {
-        next(err);
+        //saveing the data to the database
+        let user = new User(data);
+        user
+          .save()
+          .then((doc) => {
+            //generating the token
+            let token = jwt.sign(
+              { name: doc.name, phone: doc.phone },
+              process.env.JWT_PASS,
+              {
+                expiresIn: "2h",
+              }
+            );
+            res.cookie("jwt", token);
+            res.send({
+              userdata: doc,
+              res: true,
+              msg: "User registerd successfully",
+            });
+          })
+          .catch((err) => {
+            next(err);
+          });
       });
+    } else {
+      res.send({
+        res: false,
+        msg: "User with the give phone number already registered",
+      });
+    }
   });
 });
 
@@ -66,8 +79,11 @@ router.post("/login", (req, res) => {
             if (same) {
               //successful login
               let token = jwt.sign(
-                { name: doc.name, phone: doc.name },
-                process.env.JWT_PASS
+                { name: doc.name, phone: doc.phone },
+                process.env.JWT_PASS,
+                {
+                  expiresIn: "2h",
+                }
               );
               res.cookie("jwt", token);
 
@@ -100,12 +116,24 @@ router.post("/verifyToken", (req, res) => {
   let token = req.body.token;
   jwt.verify(token, process.env.JWT_PASS, (err, decoded) => {
     if (err) next(err);
-    User.findOne({ phone: decoded.phone }, (err, doc) => {
+    User.exists({ phone: decoded.phone }, (err, result) => {
       if (err) next(err);
-      res.send({
-        userdata: doc,
-        res: true,
-      });
+      console.log(decoded);
+      if (result === true) {
+        User.findOne({ phone: decoded.phone }, (err, doc) => {
+          if (err) next(err);
+          console.log(doc);
+          res.send({
+            userdata: doc,
+            res: true,
+          });
+        });
+      } else {
+        res.send({
+          res: false,
+          msg: "User with the following token does not found in the database",
+        });
+      }
     });
   });
 });

@@ -10,6 +10,8 @@ let routes = require("./routes");
 let isDev = process.env.PORT !== "production";
 
 let app = express();
+const httpServer = require("http").createServer(app);
+let io = require("./realtime");
 
 //database
 require("./database");
@@ -21,6 +23,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 app.use(morgan("tiny"));
+app.use(express.static("public"));
 app.use("/api/v1", routes);
 
 //error handler
@@ -36,6 +39,6 @@ app.use((err, req, res, next) => {
 
 //starting the server
 let PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server started successfully on port ${PORT}`);
 });

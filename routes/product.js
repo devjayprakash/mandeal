@@ -1,8 +1,41 @@
 let router = require("express").Router();
 let Product = require("../database/modals/product");
+let multer = require("multer");
+let { uuid } = require("uuidv4");
 
-router.post("/createProduct", (req, res) => {
+const DIR = "./public/";
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, DIR);
+  },
+  filename: (req, file, cb) => {
+    const fileName = file.originalname.toLowerCase().split(" ").join("-");
+    cb(null, uuid() + "-" + fileName);
+  },
+});
+
+var upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype == "image/png" ||
+      file.mimetype == "image/jpg" ||
+      file.mimetype == "image/jpeg"
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb(new Error("Only .png, .jpg and .jpeg format allowed!"));
+    }
+  },
+});
+
+router.post("/createProduct", upload.single("image"), (req, res, next) => {
+  const url = req.protocol + "://" + req.get("host") + "/" + req.file.filename;
   let data = req.body;
+  data.image = url;
+  data.mppk = JSON.parse(data.mppk);
   let product = new Product(data);
   product
     .save()
@@ -37,12 +70,50 @@ router.post("/updateProduct/:id", (req, res) => {
   let data = req.body;
   Product.updateOne({ _id: id }, data, (err, doc) => {
     if (err) next(err);
-    res.send *
-      {
-        res: true,
-        msg: "the product has been updated sucessfully",
-      };
+    res.send({
+      res: true,
+      msg: "the product has been updated sucessfully",
+    });
   });
+});
+
+router.get("/getDetail/:id", (req, res) => {
+  let id = req.params.id;
+  Product.findById(id)
+    .populate("createdBy")
+    .then((doc) => {
+      res.send({
+        res: true,
+        doc: doc,
+      });
+    });
+});
+
+router.get("/getAllProducts/:id", (req, res) => {
+  let id = req.params.id;
+  Product.find({ createdBy: id })
+    .populate("createdBy")
+    .then((result) => {
+      console.log(result);
+
+      res.send({
+        res: true,
+        msg: "all product",
+        products: result,
+      });
+    });
+});
+
+router.get("/getLast30Products", (req, res) => {
+  Product.find()
+    .limit(30)
+    .populate("createdBy")
+    .then((result) => {
+      res.send({
+        res: true,
+        products: result,
+      });
+    });
 });
 
 module.exports = router;
