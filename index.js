@@ -10,14 +10,12 @@ let routes = require("./routes");
 let isDev = process.env.PORT !== "production";
 
 let app = express();
-const httpServer = require("http").createServer(app);
-let io = require("./realtime");
 
 //database
 require("./database");
 
 //all the middlewares
-app.use(cors());
+app.use(cors({}));
 app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -39,6 +37,6 @@ app.use((err, req, res, next) => {
 
 //starting the server
 let PORT = process.env.PORT || 8080;
-httpServer.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server started successfully on port ${PORT}`);
 });

@@ -32,7 +32,8 @@ var upload = multer({
 });
 
 router.post("/createProduct", upload.single("image"), (req, res, next) => {
-  const url = req.protocol + "://" + req.get("host") + "/" + req.file.filename;
+  const url =
+    req.protocol + "://" + "192.168.43.236:8080" + "/" + req.file.filename;
   let data = req.body;
   data.image = url;
   data.mppk = JSON.parse(data.mppk);
@@ -63,6 +64,20 @@ router.delete("/deleteProduct/:id", (req, res) => {
       next(err);
     }
   });
+});
+
+router.get("/searchProduct/:query", (req, res) => {
+  let query = req.params.query;
+
+  Product.find(
+    { name: { $regex: query, $options: "i" } },
+    function (err, docs) {
+      res.send({
+        res: true,
+        docs: docs,
+      });
+    }
+  );
 });
 
 router.post("/updateProduct/:id", (req, res) => {
@@ -114,6 +129,15 @@ router.get("/getLast30Products", (req, res) => {
         products: result,
       });
     });
+});
+
+router.post("/setSold", (req, res) => {
+  let proId = req.body.productId;
+  Product.updateOne({ _id: proId }, { done: req.body.done }).then((val) => {
+    res.send({
+      res: true,
+    });
+  });
 });
 
 module.exports = router;

@@ -1,6 +1,10 @@
 let mongoose = require("mongoose");
 
 let Product = mongoose.Schema({
+  sold: {
+    type: Boolean,
+    default: false,
+  },
   name: {
     type: String,
     required: true,
