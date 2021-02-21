@@ -32,8 +32,7 @@ var upload = multer({
 });
 
 router.post("/createProduct", upload.single("image"), (req, res, next) => {
-  const url =
-    req.protocol + "://" + "192.168.43.236:8080" + "/" + req.file.filename;
+  const url = req.protocol + "://" + "localhost:8080" + "/" + req.file.filename;
   let data = req.body;
   data.image = url;
   data.mppk = JSON.parse(data.mppk);
